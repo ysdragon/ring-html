@@ -151,6 +151,95 @@ RING_FUNC(ring_html_find)
 	RING_API_RETLIST(pResultList);
 }
 
+RING_FUNC(ring_html_find_attr)
+{
+	if (RING_API_PARACOUNT != 3 || !RING_API_ISCPOINTER(1) || !RING_API_ISSTRING(2) || !RING_API_ISSTRING(3))
+	{
+		RING_API_ERROR(RING_API_BADPARATYPE);
+		return;
+	}
+
+	lxb_dom_node_t *root_node = NULL;
+	lxb_html_document_t *doc_ptr = NULL;
+
+	List *pList = RING_API_GETLIST(1);
+	if (ring_vm_api_iscpointerlist(RING_API_STATE, pList))
+	{
+		const char *cType = ring_list_getstring(pList, 2);
+		if (strcmp(cType, RING_HTML_DOC) == 0)
+		{
+			doc_ptr = (lxb_html_document_t *)ring_list_getpointer(pList, 1);
+			root_node = lxb_dom_interface_node(doc_ptr);
+		}
+		else if (strcmp(cType, RING_HTML_NODE) == 0)
+		{
+			root_node = (lxb_dom_node_t *)ring_list_getpointer(pList, 1);
+			doc_ptr = (lxb_html_document_t *)root_node->owner_document;
+		}
+	}
+
+	if (root_node == NULL || doc_ptr == NULL)
+	{
+		RING_API_ERROR("Invalid document or node pointer provided to find_attr().");
+		return;
+	}
+
+	const lxb_char_t *selector_str = (const lxb_char_t *)RING_API_GETSTRING(2);
+	size_t selector_len = (size_t)RING_API_GETSTRINGSIZE(2);
+	const lxb_char_t *attr_name = (const lxb_char_t *)RING_API_GETSTRING(3);
+	size_t attr_name_len = (size_t)RING_API_GETSTRINGSIZE(3);
+
+	lxb_status_t status;
+	lxb_css_parser_t *parser = lxb_css_parser_create();
+	status = lxb_css_parser_init(parser, NULL);
+
+	lxb_css_selector_list_t *list = lxb_css_selectors_parse(parser, selector_str, selector_len);
+	if (list == NULL)
+	{
+		RING_API_ERROR("Failed to parse CSS selector.");
+		lxb_css_parser_destroy(parser, true);
+		return;
+	}
+
+	lxb_selectors_t *selectors = lxb_selectors_create();
+	status = lxb_selectors_init(selectors);
+	if (status != LXB_STATUS_OK)
+	{
+		RING_API_ERROR("Failed to init selectors object.");
+		lxb_css_selector_list_destroy(list);
+		lxb_css_parser_destroy(parser, true);
+		lxb_selectors_destroy(selectors, true);
+		return;
+	}
+
+	lxb_dom_collection_t *collection = lxb_dom_collection_make(&doc_ptr->dom_document, 16);
+
+	status = lxb_selectors_find(selectors, root_node, list, find_callback, collection);
+
+	List *pResultList = RING_API_NEWLIST;
+
+	if (collection != NULL)
+	{
+		for (size_t i = 0; i < lxb_dom_collection_length(collection); i++)
+		{
+			lxb_dom_element_t *element = lxb_dom_collection_element(collection, i);
+			size_t value_len;
+			const lxb_char_t *value = lxb_dom_element_get_attribute(element, attr_name, attr_name_len, &value_len);
+			if (value != NULL)
+			{
+				ring_list_addstring2_gc(RING_API_STATE, pResultList, (const char *)value, (int)value_len);
+			}
+		}
+	}
+
+	lxb_dom_collection_destroy(collection, true);
+	lxb_css_selector_list_destroy(list);
+	lxb_selectors_destroy(selectors, true);
+	lxb_css_parser_destroy(parser, true);
+
+	RING_API_RETLIST(pResultList);
+}
+
 RING_FUNC(ring_html_node_text)
 {
 	if (RING_API_PARACOUNT != 1 || !RING_API_ISCPOINTER(1))
@@ -749,6 +838,7 @@ RING_LIBINIT
 	RING_API_REGISTER("html_parse", ring_html_parse);
 	RING_API_REGISTER("html_get_body", ring_html_get_body);
 	RING_API_REGISTER("html_find", ring_html_find);
+	RING_API_REGISTER("html_find_attr", ring_html_find_attr);
 	RING_API_REGISTER("html_node_text", ring_html_node_text);
 	RING_API_REGISTER("html_node_html", ring_html_node_html);
 	RING_API_REGISTER("html_node_tag", ring_html_node_tag);
