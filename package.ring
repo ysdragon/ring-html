@@ -5,16 +5,20 @@ aPackageInfo = [
 	:developer = "ysdragon",
 	:email = "",
 	:license = "MIT License",
-	:version = "1.0.2",
+	:version = "1.0.3",
 	:ringversion = "1.24",
 	:versions = 	[
 		[
-			:version = "1.0.2",
+			:version = "1.0.3",
 			:branch = "master"
 		]
 	],
 	:libs = 	[
-		
+		[
+			:name = "",
+			:version = "",
+			:providerusername = ""
+		]
 	],
 	:files = 	[
 		"CMakeLists.txt",
@@ -100,5 +104,9 @@ aPackageInfo = [
 	:linuxremove = "",
 	:macosremove = "",
 	:ubunturemove = "",
-	:fedoraremove = ""
+	:fedoraremove = "",
+	:remotefolder = "ring-html",
+	:branch = "master",
+	:providerusername = "ysdragon",
+	:providerwebsite = "github.com"
 ]
