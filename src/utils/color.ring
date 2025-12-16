@@ -2,10 +2,14 @@
 
 load "stdlibcore.ring"
 
+# Enable unicode support in Windows CMD/PowerShell
 if isWindows()
-	# Enable unicode support in Windows CMD/PowerShell
 	systemSilent("chcp 65001")
 ok
+
+# ============================================================================
+# Constants
+# ============================================================================
 
 # Color list
 cColors = [
@@ -37,6 +41,10 @@ cStyles = [
 	:HIDDEN = "8"
 ]
 
+# ============================================================================
+# Color functions
+# ============================================================================
+
 func setColor(colorCode)
 	return char(27) + "[" + colorCode + "m"
 
@@ -63,5 +71,32 @@ func colorText(params)
 	return setColor(fullCode) + text + resetColor()
 
 
+# ============================================================================
+# Colored Log functions
+# ============================================================================
 
+func printError cMessage
+	? colorText([
+		:text  = "Error: " + cMessage,
+		:color = :BRIGHT_RED,
+		:style = :BOLD
+	])
 
+func printWarning cMessage
+	? colorText([
+		:text  = "  -> " + cMessage,
+		:color = :YELLOW
+	])
+
+func printSuccess cMessage
+	? colorText([
+		:text  = cMessage,
+		:color = :BRIGHT_GREEN,
+		:style = :BOLD
+	])
+
+func printInfo cMessage
+	? colorText([
+		:text  = "  -> " + cMessage,
+		:color = :CYAN
+	])
