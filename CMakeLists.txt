@@ -29,7 +29,7 @@ endif()
 FetchContent_Declare(
     lexbor
     GIT_REPOSITORY https://github.com/lexbor/lexbor.git
-    GIT_TAG v2.6.0
+    GIT_TAG v2.7.0
 )
 
 set(LEXBOR_BUILD_SHARED OFF CACHE BOOL "Build lexbor as a shared library")
