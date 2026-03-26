@@ -38,6 +38,7 @@ class Installer
 	cLibPrefix = ""
 	cLibExt    = ""
 	cPathSep   = "/"
+	lIsMusl    = false
 
 	# Paths
 	cPackagePath  = ""
@@ -71,6 +72,7 @@ class Installer
 			configurePlatform("windows", "", ".dll", "\\")
 		but isLinux()
 			configurePlatform("linux", "lib", ".so", "/")
+			detectMusl()
 		but isFreeBSD()
 			configurePlatform("freebsd", "lib", ".so", "/")
 		but isMacOSX()
@@ -80,6 +82,13 @@ class Installer
 			return false
 		ok
 		return true
+
+	func detectMusl
+		# Detect musl libc by checking ldd output
+		cOutput = systemCmd("sh -c 'ldd 2>&1'")
+		if substr(cOutput, "musl")
+			lIsMusl = true
+		ok
 
 	func configurePlatform osName, libPrefix, libExt, pathSep
 		cOSName    = osName
@@ -112,10 +121,18 @@ class Installer
 			exefolder(), "..", "tools", "ringpm", "packages", C_PACKAGE_NAME
 		])
 
-		cLibPath = buildPath([
-			cPackagePath, "lib", cOSName, cArchName,
-			cLibPrefix + C_LIB_NAME + cLibExt
-		])
+		# Build library path - use musl subdirectory on Linux if musl is detected
+		if lIsMusl
+			cLibPath = buildPath([
+				cPackagePath, "lib", cOSName, "musl", cArchName,
+				cLibPrefix + C_LIB_NAME + cLibExt
+			])
+		else
+			cLibPath = buildPath([
+				cPackagePath, "lib", cOSName, cArchName,
+				cLibPrefix + C_LIB_NAME + cLibExt
+			])
+		ok
 
 		cExamplesPath = buildPath([cPackagePath, "examples"])
 		cSamplesPath  = buildPath([exefolder(), "..", "samples", C_SAMPLES_DIR])
@@ -126,9 +143,14 @@ class Installer
 		ok
 
 		printError(C_PRETTY_NAME + " library not found!")
-		printWarning("Expected location: " + cLibPath)
-		printInfo("Ensure the library is built for: " + cOSName + "/" + cArchName)
-		printInfo("Build instructions: " + buildPath([cPackagePath, "README.md"]))
+		printSubStep("Expected location: " + cLibPath)
+		if lIsMusl
+			printInfo("Detected musl libc environment (Alpine Linux, etc.)")
+			printSubStep("Ensure library is built for: " + cOSName + "/musl/" + cArchName)
+		else
+			printSubStep("Ensure library is built for: " + cOSName + "/" + cArchName)
+		ok
+		printInfo("See build instructions: " + buildPath([cPackagePath, "README.md"]))
 		return false
 
 	# ========================================================================
@@ -136,15 +158,29 @@ class Installer
 	# ========================================================================
 
 	func performInstallation
+		printHeader("Installing " + C_PRETTY_NAME)
+		
 		try
+			printStep("Installing library for " + cOSName + "/" + cArchName + "…")
 			installLibrary()
+			printSuccess("Library installed")
+			
+			printStep("Copying examples…")
 			copyExamples()
+			printSuccess("Examples copied")
+			
+			printStep("Updating Ring configuration…")
 			updateRingConfig()
+			printSuccess("Configuration updated")
+			
+			printStep("Setting up Ring2EXE…")
 			setupRing2EXE()
+			printSuccess("Ring2EXE configured")
+			
 			showSuccessMessage()
 		catch
 			printError("Failed to install " + C_PRETTY_NAME + "!")
-			printWarning("Details: " + cCatchError)
+			printSubStep("Details: " + cCatchError)
 		done
 
 	func installLibrary
@@ -246,9 +282,12 @@ class Installer
 ]'
 
 	func showSuccessMessage
-		printSuccess("Successfully installed " + C_PRETTY_NAME + "!")
-		printInfo("Samples available in: " + cSamplesPath)
-		printInfo("Package examples: " + cExamplesPath)
+		? ""
+		printSuccess(C_PRETTY_NAME + " installed successfully!")
+		? ""
+		printInfo("Samples: " + cSamplesPath)
+		printInfo("Examples: " + cExamplesPath)
+		? ""
 
 	# ========================================================================
 	# Utility Methods
