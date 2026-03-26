@@ -9,27 +9,32 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
-        - release: "14.3"
+        - release: "15.0"
           arch: amd64
           arch_name: amd64
           name: freebsd-amd64
-        - release: "14.3"
+          runner: ubuntu-latest
+        - release: "15.0"
           arch: aarch64
           arch_name: arm64
           name: freebsd-arm64
+          runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
 
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
 
+    - name: Clean lib directory
+      run: rm -rf lib
+
     - name: Build in FreeBSD VM
       id: freebsd_build
-      uses: vmactions/freebsd-vm@v1.2.8
+      uses: vmactions/freebsd-vm@v1
       with:
         release: ${{ matrix.release }}
         arch: ${{ matrix.arch }}
@@ -37,12 +42,12 @@ jobs:
         sync: rsync
         mem: 4096
         prepare: |
-          pkg update
+          pkg update -f
           pkg install -y cmake git ninja pkgconf
 
         run: |
-          # Clone Ring Language
-          git clone --branch ${{ inputs.ring-version }} --depth 1 https://github.com/ring-lang/ring.git ring
+          # Clone Ring Source
+          git clone --branch ${{ inputs.ring-version }} --depth 1 https://github.com/ringpackages/ringsrc.git ring
           cd ring
 
           # Set RING environment variable
