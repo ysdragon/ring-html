@@ -8,7 +8,7 @@
 
 [language-ring]: https://img.shields.io/badge/language-Ring-2D54CB.svg?style=for-the-badge&labelColor=414868
 [last-commit]: https://img.shields.io/github/last-commit/ysdragon/ring-html?style=for-the-badge&logo=github&logoColor=C0CAF5&labelColor=414868&color=8c73cc
-[release-version]: https://img.shields.io/github/v/release/ysdragon/ring-html?style=for-the-badge&logo=github&logoColor=C0CAF5&labelColor=414868&color=8c73cc
+[release-version]: https://img.shields.io/badge/dynamic/regex?url=https%3A%2F%2Fraw.githubusercontent.com%2Fysdragon%2Fring-html%2Fmaster%2Fpackage.ring&search=%3Aversion\s*%3D\s*%22([^%22]%2B)%22&replace=%241&style=for-the-badge&label=version&labelColor=414868&color=7664C6
 [license]: https://img.shields.io/github/license/ysdragon/ring-html?style=for-the-badge&logo=opensourcehardware&label=License&logoColor=C0CAF5&labelColor=414868&color=8c73cc
 [issues]: https://img.shields.io/github/issues/ysdragon/ring-html?style=for-the-badge&logo=github&logoColor=C0CAF5&labelColor=414868&color=8c73cc
 
