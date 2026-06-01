@@ -39,7 +39,7 @@ Follow these instructions to get the RingHTML library up and running on your sys
 
 ### Prerequisites
 
-- **[Ring](https://ring-lang.github.io/download.html):** Ensure you have Ring language version 1.24 or higher installed.
+- **[Ring](https://ring-lang.github.io/download.html):** Ensure you have Ring language version 1.27 or higher installed.
 
 ### Installation
 
