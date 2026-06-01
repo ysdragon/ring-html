@@ -64,8 +64,7 @@ aPackageInfo = [
 
 	],
 	:freebsdfiles = 	[
-		"lib/freebsd/amd64/libring_html.so",
-		"lib/freebsd/arm64/libring_html.so"
+		"lib/freebsd/amd64/libring_html.so"
 	],
 	:macosfiles = 	[
 		"lib/macos/amd64/libring_html.dylib",
